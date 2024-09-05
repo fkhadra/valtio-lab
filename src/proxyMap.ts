@@ -24,6 +24,8 @@ type InternalProxyMap<K, V> = Map<K, V> & {
   toJSON: object;
 };
 
+const maybeProxify = (v) => (canProxy(v) ? proxy(v) : v);
+
 export function proxyMap<K, V>(entries?: Iterable<readonly [K, V]> | null) {
   let seq = 0;
   const keys = new Map<any, number>();
@@ -34,11 +36,11 @@ export function proxyMap<K, V>(entries?: Iterable<readonly [K, V]> | null) {
       return !!this.data[keys.get(key)];
     },
     set(key, value) {
-      const k = canProxy(key) ? proxy(key) : key;
+      const k = maybeProxify(key);
       keys.set(k, seq);
 
-      this.data[seq] = canProxy(value) ? proxy(value) : value;
-      // this.data.length;
+      this.data[seq] = maybeProxify(value);
+
       seq++;
 
       return this;
@@ -60,6 +62,7 @@ export function proxyMap<K, V>(entries?: Iterable<readonly [K, V]> | null) {
 
       return keys.size;
     },
+    // TODO
     toJSON() {
       return new Map(this.data);
     },
@@ -68,10 +71,8 @@ export function proxyMap<K, V>(entries?: Iterable<readonly [K, V]> | null) {
         cb(this.data[v], k);
       });
       this.data.length;
-      // this.data.forEach((p) => {
-      //   cb(p[1], p[0], this);
-      // });
     },
+    // TODO
     keys() {
       return this.data.map((p) => p[0]).values();
     },
@@ -84,12 +85,14 @@ export function proxyMap<K, V>(entries?: Iterable<readonly [K, V]> | null) {
       this.data.length;
       return ret;
     },
+    // TODO
     entries() {
       return new Map(this.data).entries();
     },
     get [Symbol.toStringTag]() {
       return "Map";
     },
+    // TODO
     [Symbol.iterator]() {
       return this.entries();
     },
